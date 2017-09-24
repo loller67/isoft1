@@ -414,49 +414,32 @@ balance
 	^ account1 balance + account2 balance.! !
 
 
-!Portfolio methodsFor: 'testing' stamp: 'ji 9/22/2017 16:28:24'!
+!Portfolio methodsFor: 'testing' stamp: 'JI 9/24/2017 01:35:53'!
 manages: anAccount
 
-		(anAccount isKindOf: self class) ifTrue: [^ self managesPortfolio: anAccount ].
-		^ self accounts includes: anAccount ! !
+		^ account1 = anAccount or: [account2 = anAccount ] or: [account1 manages: anAccount] or: [ account2 manages: anAccount ]
+		! !
 
-!Portfolio methodsFor: 'testing' stamp: 'ji 9/22/2017 15:22:36'!
-registers: aTtransaction
+!Portfolio methodsFor: 'testing' stamp: 'JI 9/24/2017 01:29:56'!
+registers: aTransaction
 
 	^true ! !
 
 
-!Portfolio methodsFor: 'transactions' stamp: 'ji 9/22/2017 15:47:08'!
+!Portfolio methodsFor: 'transactions' stamp: 'JI 9/24/2017 01:36:32'!
 transactions 
 
-	| transacciones1 transacciones2 |
-	transacciones1 _ account1 transactions .
-	transacciones2 _ account2 transactions .
-	^ transacciones1 union: transacciones2! !
+	
+	^account1 transactions union: account2 transactions .
+	! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'ji 9/22/2017 15:52:14'!
+!Portfolio methodsFor: 'transactions' stamp: 'JI 9/24/2017 01:07:08'!
 transactionsOf: anAccount 
-
+	(self manages: anAccount) ifFalse: [ self error: self class accountNotManagedMessageDescription ].
 	^ anAccount  transactions copy! !
 
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'ji 9/22/2017 16:15:28'!
-accounts
-
-	| accountsManaged |
-	accountsManaged _ OrderedCollection new.
-	
-	(account1 isKindOf: ReceptiveAccount ) 
-		ifTrue: [ accountsManaged add: account1 ]
-		ifFalse: [ accountsManaged _ accountsManaged union: account1 accounts].
-	
-	(account2 isKindOf: ReceptiveAccount ) 
-		ifTrue: [ accountsManaged add: account2 ]
-		ifFalse: [ accountsManaged _ accountsManaged union: account2 accounts].		
-		
-	^ accountsManaged ! !
-
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'ji 9/22/2017 15:15:45'!
+!Portfolio methodsFor: 'initializers' stamp: 'ji 9/22/2017 15:15:45'!
 initializeWith: anAccount1 with: anAccount2
 	
 	
@@ -469,15 +452,20 @@ initializeWith: anAccount1 with: anAccount2
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'ji 9/22/2017 15:12:23'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'JI 9/24/2017 01:08:48'!
 with: anAccount1 with: anAccount2
 
+	((anAccount1 manages: anAccount2) or: [anAccount2 manages: anAccount1 ]) ifTrue: [self error: self accountAlreadyManagedErrorMessage ].
 	^ self new initializeWith: anAccount1 with: anAccount2 ! !
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:41'!
-withAll: aCollectionOfAccounts
 
-	self shouldBeImplemented ! !
+!Portfolio class methodsFor: 'message error description' stamp: 'JI 9/24/2017 01:07:44'!
+accountAlreadyManagedErrorMessage
+	^'You already manage this account dude'! !
+
+!Portfolio class methodsFor: 'message error description' stamp: 'JI 9/24/2017 01:03:17'!
+accountNotManagedMessageDescription
+	^'Cannot manage this account dude'! !
 
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
