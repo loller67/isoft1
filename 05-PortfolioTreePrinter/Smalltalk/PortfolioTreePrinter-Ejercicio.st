@@ -458,51 +458,29 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/25/2017 21:11:21'!
+!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:53:08'!
 accountSummaryLinesOf: aReceptiveAccount 
 	
-	| transactions summaryOfTransactions depositText extractionText transferenceText |
+	^ aReceptiveAccount accountSummary! !
 
-	transactions _ aReceptiveAccount transactions .
-	summaryOfTransactions _ OrderedCollection new.
-	
-	depositText _ 'Deposito por '.
-	extractionText _  'Extraccion por '.
-	transferenceText _ 'Transferencia por '.
-	
-	transactions do: [ :aTransaction | 
-		(aTransaction isKindOf: Deposit ) 
-			ifTrue: [ summaryOfTransactions add: depositText , aTransaction value asString ].
-		(aTransaction isKindOf: Withdraw ) 
-			ifTrue: [ summaryOfTransactions add: extractionText , aTransaction value asString].
-		((aTransaction isKindOf: Transfer ) and: [aTransaction receiverIs: aReceptiveAccount ])
-			ifTrue: [ summaryOfTransactions add: transferenceText , aTransaction value asString].
-		((aTransaction isKindOf: Transfer ) and: [aTransaction receiverIsNot: aReceptiveAccount ])
-			ifTrue: [ summaryOfTransactions add: transferenceText , '-',aTransaction value asString].
-		].
-	^ summaryOfTransactions ! !
-
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/25/2017 21:17:55'!
+!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:49:58'!
 accountTransferNetOf: aReceptiveAccount 
 	
-	| transfers |
-	transfers _  aReceptiveAccount transactions select: [:aTransaction | aTransaction isKindOf: Transfer ].
+	^aReceptiveAccount transferNet.
 	
-	^transfers inject: 0 into: [:net :aTransfer |
-		(aTransfer receiverIs: aReceptiveAccount ) 
-			ifTrue: [net + aTransfer value]
-			ifFalse: [ net - aTransfer value ].
-		]! !
+	! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:51:41'!
 investmentEarningsOf: aReceptiveAccount 
 	
-	self shouldBeImplemented ! !
+	
+	^aReceptiveAccount investmentEarnings
+		! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:52:30'!
 investmentNetOf: aReceptiveAccount 
 	
-	self shouldBeImplemented ! !
+	^ aReceptiveAccount investmentNet! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
 portofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
@@ -525,6 +503,15 @@ Object subclass: #AccountTransaction
 !AccountTransaction methodsFor: 'evaluating' stamp: 'HernanWilkinson 7/14/2011 06:48'!
 value
 
+	self subclassResponsibility ! !
+
+!AccountTransaction methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:16:56'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aSmallInteger 
+	self subclassResponsibility .! !
+
+
+!AccountTransaction methodsFor: 'printing' stamp: 'ji 9/26/2017 18:56:39'!
+printSummary
 	self subclassResponsibility ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -551,6 +538,63 @@ AccountTransaction subclass: #CertificateOfDeposit
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:43:34'!
+interestRate
+	^tna *100! !
+
+!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:33:24'!
+investmentEarnings
+	
+	^value*tna/360*numberOfDays
+	
+	! !
+
+!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:38:55'!
+periodOfDeposit
+	 ^ numberOfDays ! !
+
+!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:25:48'!
+value
+	^value! !
+
+!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:20:52'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+
+	^ aBalance - value
+	! !
+
+
+!CertificateOfDeposit methodsFor: 'initialization' stamp: 'ji 9/26/2017 17:20:12'!
+register: anAmountOfMoney during: anAmountOfDays at: interestRate on: aReceptiveAccount 
+	
+	numberOfDays _ anAmountOfDays .
+	value _ anAmountOfMoney .
+	account _ aReceptiveAccount .
+	tna _ interestRate .! !
+
+
+!CertificateOfDeposit methodsFor: 'printing' stamp: 'ji 9/26/2017 19:02:42'!
+printSummary
+	
+	^'Plazo fijo por ', value asString, ' durante ', numberOfDays asString , ' dias a una tna de ', ((tna*100) asString), '%'! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CertificateOfDeposit class' category: #'PortfolioTreePrinter-Ejercicio'!
+CertificateOfDeposit class
+	instanceVariableNames: ''!
+
+!CertificateOfDeposit class methodsFor: 'instance creation' stamp: 'ji 9/26/2017 17:23:14'!
+register: anAmountOfMoney during: anAmountOfDays at: interestRate on: aReceptiveAccount 
+
+	| certificateOfDeposit |
+	certificateOfDeposit _ self new register: anAmountOfMoney during: anAmountOfDays at: interestRate on: aReceptiveAccount .
+
+	aReceptiveAccount register: certificateOfDeposit .
+
+
+	^ certificateOfDeposit ! !
+
 
 !classDefinition: #Deposit category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransaction subclass: #Deposit
@@ -565,10 +609,21 @@ initializeFor: aValue
 	value := aValue ! !
 
 
-!Deposit methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:38'!
+!Deposit methodsFor: 'evaluating' stamp: 'HernanWilkinson 7/13/2011 18:38'!
 value
 
 	^ value! !
+
+!Deposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:17:59'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+	
+	^ aBalance + value! !
+
+
+!Deposit methodsFor: 'printing' stamp: 'ji 9/26/2017 18:57:32'!
+printSummary
+	
+	^ 'Deposito por ', value asString ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -592,6 +647,94 @@ register: aValue on: account
 	^ withdraw! !
 
 
+!classDefinition: #Transfer category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransaction subclass: #Transfer
+	instanceVariableNames: 'value sourceAccount targetAccount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!Transfer methodsFor: 'initializer' stamp: 'ji 9/25/2017 20:58:39'!
+for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount
+
+	value _ anAmount .
+	sourceAccount _ aReceptiveAccount.
+	targetAccount _ anotherReceptiveAccount.! !
+
+
+!Transfer methodsFor: 'evaluating' stamp: 'ji 9/25/2017 21:00:34'!
+value
+ ^ value! !
+
+!Transfer methodsFor: 'evaluating' stamp: 'ji 9/26/2017 19:06:19'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+	
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transfer class' category: #'PortfolioTreePrinter-Ejercicio'!
+Transfer class
+	instanceVariableNames: ''!
+
+!Transfer class methodsFor: 'instance creation' stamp: 'ji 9/25/2017 20:57:54'!
+for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount 
+
+		^self new for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount ! !
+
+!Transfer class methodsFor: 'instance creation' stamp: 'ji 9/26/2017 18:34:06'!
+register: anAmount from: aSourceReceptiveAccount to: aTargetReceptiveAccount
+
+	" anotherReceptiveAccount no registra la transferencia, fijarse si necesitamos hacero "
+
+	| transferSource transferTarget |
+	transferSource _ TransferSource for: anAmount withSender: aSourceReceptiveAccount  withReceiver: aTargetReceptiveAccount .
+	transferTarget _ TransferTarget for: anAmount withSender: aSourceReceptiveAccount  withReceiver: aTargetReceptiveAccount .
+
+	aSourceReceptiveAccount register: transferSource .
+	aTargetReceptiveAccount register: transferTarget .
+		
+	^ transferSource 
+! !
+
+
+!classDefinition: #TransferSource category: #'PortfolioTreePrinter-Ejercicio'!
+Transfer subclass: #TransferSource
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!TransferSource methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:27:49'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+	
+	^  aBalance -value! !
+
+
+!TransferSource methodsFor: 'printing' stamp: 'ji 9/26/2017 18:59:45'!
+printSummary
+	
+	^'Transferencia por -', value asString! !
+
+
+!classDefinition: #TransferTarget category: #'PortfolioTreePrinter-Ejercicio'!
+Transfer subclass: #TransferTarget
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!TransferTarget methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:28:01'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+	
+	^ aBalance + value! !
+
+
+!TransferTarget methodsFor: 'printing' stamp: 'ji 9/26/2017 19:00:03'!
+printSummary
+	^'Transferencia por ', value asString! !
+
+
 !classDefinition: #Withdraw category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransaction subclass: #Withdraw
 	instanceVariableNames: 'value'
@@ -609,6 +752,18 @@ initializeFor: aValue
 value
 
 	^ value ! !
+
+
+!Withdraw methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:18:26'!
+valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
+
+	^aBalance - value! !
+
+
+!Withdraw methodsFor: 'printing' stamp: 'ji 9/26/2017 18:58:20'!
+printSummary
+	
+	^ 'Extraccion por ', value asString! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -779,22 +934,12 @@ initialize
 	transactions := OrderedCollection new.! !
 
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'ji 9/25/2017 20:52:33'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'ji 9/26/2017 18:16:35'!
 balance
 
 	| balance |
 	balance _ 0.
-	transactions do: [:transaction |
-		(transaction isKindOf: Withdraw)
-			ifTrue: [ balance _ balance - transaction value ].
-		(transaction isKindOf: Deposit) 
-			ifTrue: [  balance _ balance + transaction value ].
-		((transaction isKindOf: Transfer ) and: [transaction receiverIs: self ])
-			ifTrue: [  balance _ balance + transaction value ].
-		((transaction isKindOf: Transfer ) and: [transaction receiverIsNot: self ])
-			ifTrue: [ balance _ balance - transaction value ].
-	
-		].
+	transactions do: [:transaction |	balance _ transaction valueWithAccount: self withACurrentBalanceOf: balance].
 	
 	^balance
 	
@@ -825,68 +970,33 @@ registers: aTtransaction
 	^ transactions includes: aTtransaction 
 ! !
 
-
-!classDefinition: #Transfer category: #'PortfolioTreePrinter-Ejercicio'!
-Object subclass: #Transfer
-	instanceVariableNames: 'value sourceAccount targetAccount'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!Transfer methodsFor: 'associating' stamp: 'ji 9/25/2017 20:53:47'!
-for: aSmallInteger 
-	self shouldBeImplemented.! !
-
-
-!Transfer methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 20:58:39'!
-for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount
-
-	value _ anAmount .
-	sourceAccount _ aReceptiveAccount.
-	targetAccount _ anotherReceptiveAccount.! !
-
-!Transfer methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 20:59:00'!
-receiverIs: aReceptiveAccount 
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:55:03'!
+accountSummary
 	
-	^ targetAccount = aReceptiveAccount ! !
+	|  summaryOfTransactions |
 
-!Transfer methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 20:59:31'!
-receiverIsNot: aReceptiveAccount 
 	
-	^ (self receiverIs: aReceptiveAccount) not! !
-
-!Transfer methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 21:00:34'!
-value
- ^ value! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Transfer class' category: #'PortfolioTreePrinter-Ejercicio'!
-Transfer class
-	instanceVariableNames: ''!
-
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 20:53:42'!
-for: anAmount 
+	summaryOfTransactions _ OrderedCollection new.
 	
-	^self new for: anAmount 
-	
-	! !
 
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 20:57:54'!
-for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount 
-
-		^self new for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccount ! !
-
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'ji 9/25/2017 21:07:32'!
-register: anAmount from: aReceptiveAccount to: anotherReceptiveAccount
-
-	" anotherReceptiveAccount no registra la transferencia, fijarse si necesitamos hacero "
-
-	| transfer |
-	
-	transfer := self for: anAmount withSender: aReceptiveAccount  withReceiver: anotherReceptiveAccount .
-	aReceptiveAccount register: transfer .
-	anotherReceptiveAccount register: transfer .
+	transactions do: [ :aTransaction | summaryOfTransactions add: (aTransaction printSummary)].
 		
-	^ transfer 
-! !
+	^ summaryOfTransactions ! !
+
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:52:06'!
+investmentEarnings
+	^( transactions select: [: transaction | transaction isKindOf: CertificateOfDeposit ])
+		sum: [:aCertificate | aCertificate investmentEarnings].! !
+
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:52:47'!
+investmentNet
+	^ ( transactions select: [ :transactions | transactions isKindOf: CertificateOfDeposit ]) sum: [:aCertificateOfDeposit | aCertificateOfDeposit value]! !
+
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:51:07'!
+transferNet
+
+	| transfers |
+	transfers _ transactions select: [:aTransaction | aTransaction isKindOf: Transfer ].
+	
+	^transfers inject: 0 into: [:net :aTransfer | aTransfer valueWithAccount: self withACurrentBalanceOf: net	]! !
