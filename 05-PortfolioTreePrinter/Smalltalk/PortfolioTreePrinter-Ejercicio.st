@@ -458,29 +458,33 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:53:08'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:40:43'!
 accountSummaryLinesOf: aReceptiveAccount 
 	
-	^ aReceptiveAccount accountSummary! !
+	^self onTransactionsOf: aReceptiveAccount inject: OrderedCollection new into: [:summaryOfTransactions :aTransaction | summaryOfTransactions add: (aTransaction printSummary). summaryOfTransactions ].
+		
 
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:49:58'!
+	
+! !
+
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:06'!
 accountTransferNetOf: aReceptiveAccount 
 	
-	^aReceptiveAccount transferNet.
+	^self onTransactionsOf: aReceptiveAccount inject: 0 into: [:net :aTransfer | aTransfer transferenceValue + net	]
 	
 	! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:51:41'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:13'!
 investmentEarningsOf: aReceptiveAccount 
 	
 	
-	^aReceptiveAccount investmentEarnings
+	^self onTransactionsOf: aReceptiveAccount inject: 0 into: [:total :aTransaction | aTransaction investmentEarnings +total].
 		! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'ji 9/26/2017 18:52:30'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:20'!
 investmentNetOf: aReceptiveAccount 
 	
-	^ aReceptiveAccount investmentNet! !
+	^ self onTransactionsOf: aReceptiveAccount inject: 0 into:[:total :aTransaction | aTransaction value] .! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'JI 9/26/2017 23:18:53'!
 portofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
@@ -492,6 +496,12 @@ portofolioTreeOf: aPortfolio namingAccountWith: aDictionary
 reversePortofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
 	
 	^ (self portofolioTreeOf: aPortfolio namingAccountWith: aDictionary) 	reverse ! !
+
+
+!PortfolioTest methodsFor: 'evaluating' stamp: 'JI 9/27/2017 19:44:58'!
+onTransactionsOf: aReceptiveAccount inject: something into: aBinaryBlock
+	
+	^ aReceptiveAccount transactions inject: something into: aBinaryBlock! !
 
 
 !classDefinition: #AccountTransaction category: #'PortfolioTreePrinter-Ejercicio'!
@@ -520,7 +530,7 @@ valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aSmallInteger
 	self subclassResponsibility .! !
 
 
-!AccountTransaction methodsFor: 'printing' stamp: 'ji 9/26/2017 18:56:39'!
+!AccountTransaction methodsFor: 'printing' stamp: 'JI 9/27/2017 19:02:35'!
 printSummary
 	self subclassResponsibility ! !
 
@@ -968,14 +978,13 @@ initialize
 	transactions := OrderedCollection new.! !
 
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'ji 9/26/2017 18:16:35'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'JI 9/27/2017 19:16:48'!
 balance
 
-	| balance |
-	balance _ 0.
-	transactions do: [:transaction |	balance _ transaction valueWithAccount: self withACurrentBalanceOf: balance].
 	
-	^balance
+	^transactions inject: 0 into: [:balance :transaction | transaction valueWithAccount: self withACurrentBalanceOf: balance].
+	
+	
 	
 	
 	! !
@@ -1004,36 +1013,6 @@ registers: aTtransaction
 	^ transactions includes: aTtransaction 
 ! !
 
-
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:55:03'!
-accountSummary
-	
-	|  summaryOfTransactions |
-
-	
-	summaryOfTransactions _ OrderedCollection new.
-	
-
-	transactions do: [ :aTransaction | summaryOfTransactions add: (aTransaction printSummary)].
-		
-	^ summaryOfTransactions ! !
-
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:09:03'!
-investmentEarnings
-
-	^ transactions inject: 0 into: [:total :aTransaction | aTransaction investmentEarnings +total].
-! !
-
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:12:36'!
-investmentNet
-	^ transactions inject: 0 into:[:total :aTransaction | aTransaction value] .
-	! !
-
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:21:33'!
-transferNet
-
-
-	^ transactions inject: 0 into: [:net :aTransfer | aTransfer transferenceValue + net	]! !
 
 
 !ReceptiveAccount methodsFor: 'printing' stamp: 'JI 9/26/2017 22:50:07'!
