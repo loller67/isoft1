@@ -482,15 +482,16 @@ investmentNetOf: aReceptiveAccount
 	
 	^ aReceptiveAccount investmentNet! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/26/2017 23:18:53'!
 portofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
 	
-	self shouldBeImplemented ! !
+	
+	^ aPortfolio namingAccountsWith: aDictionary! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/26/2017 23:21:36'!
 reversePortofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
 	
-	self shouldBeImplemented ! !
+	^ (self portofolioTreeOf: aPortfolio namingAccountWith: aDictionary) 	reverse ! !
 
 
 !classDefinition: #AccountTransaction category: #'PortfolioTreePrinter-Ejercicio'!
@@ -499,6 +500,15 @@ Object subclass: #AccountTransaction
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!AccountTransaction methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:29:08'!
+investmentEarnings
+	^0
+	! !
+
+!AccountTransaction methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:21:59'!
+transferenceValue
+	^0! !
 
 !AccountTransaction methodsFor: 'evaluating' stamp: 'HernanWilkinson 7/14/2011 06:48'!
 value
@@ -538,20 +548,12 @@ AccountTransaction subclass: #CertificateOfDeposit
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:43:34'!
-interestRate
-	^tna *100! !
-
 !CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:33:24'!
 investmentEarnings
 	
 	^value*tna/360*numberOfDays
 	
 	! !
-
-!CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:38:55'!
-periodOfDeposit
-	 ^ numberOfDays ! !
 
 !CertificateOfDeposit methodsFor: 'evaluating' stamp: 'ji 9/26/2017 17:25:48'!
 value
@@ -662,6 +664,10 @@ for: anAmount withSender: aReceptiveAccount withReceiver: anotherReceptiveAccoun
 	targetAccount _ anotherReceptiveAccount.! !
 
 
+!Transfer methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:22:26'!
+transferenceValue
+	self subclassResponsibility ! !
+
 !Transfer methodsFor: 'evaluating' stamp: 'ji 9/25/2017 21:00:34'!
 value
  ^ value! !
@@ -705,6 +711,11 @@ Transfer subclass: #TransferSource
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!TransferSource methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:22:52'!
+transferenceValue
+
+	^ 0-value! !
+
 !TransferSource methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:27:49'!
 valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
 	
@@ -723,6 +734,10 @@ Transfer subclass: #TransferTarget
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!TransferTarget methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:23:03'!
+transferenceValue
+	^value! !
 
 !TransferTarget methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:28:01'!
 valueWithAccount: aReceptiveAccount withACurrentBalanceOf: aBalance 
@@ -860,6 +875,25 @@ initializeWithAll: aCollectionOfAccounts
 
 	accounts := aCollectionOfAccounts   ! !
 
+
+!Portfolio methodsFor: 'printing' stamp: 'JI 9/26/2017 23:20:31'!
+namingAccountsWith: aDictionary 
+	
+	| leftBranch rightBranch fullTree almostFullTree |
+	
+	leftBranch _ (accounts at: 1) namingAccountsWith: aDictionary .
+	rightBranch _ (accounts at: 2) namingAccountsWith: aDictionary .
+	
+	almostFullTree _ OrderedCollection new.
+	leftBranch do: [:aLine| almostFullTree add: aLine ].
+	rightBranch do: [:aLine| almostFullTree add: aLine ].
+	
+	fullTree _ OrderedCollection new.
+	almostFullTree do: [:aLine | fullTree add: (' ', aLine) ].
+	
+	fullTree addFirst: (aDictionary at: self).
+	^fullTree ! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: #'PortfolioTreePrinter-Ejercicio'!
@@ -984,19 +1018,25 @@ accountSummary
 		
 	^ summaryOfTransactions ! !
 
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:52:06'!
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:09:03'!
 investmentEarnings
-	^( transactions select: [: transaction | transaction isKindOf: CertificateOfDeposit ])
-		sum: [:aCertificate | aCertificate investmentEarnings].! !
 
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:52:47'!
+	^ transactions inject: 0 into: [:total :aTransaction | aTransaction investmentEarnings +total].
+! !
+
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:12:36'!
 investmentNet
-	^ ( transactions select: [ :transactions | transactions isKindOf: CertificateOfDeposit ]) sum: [:aCertificateOfDeposit | aCertificateOfDeposit value]! !
+	^ transactions inject: 0 into:[:total :aTransaction | aTransaction value] .
+	! !
 
-!ReceptiveAccount methodsFor: 'evaluating' stamp: 'ji 9/26/2017 18:51:07'!
+!ReceptiveAccount methodsFor: 'evaluating' stamp: 'JI 9/26/2017 22:21:33'!
 transferNet
 
-	| transfers |
-	transfers _ transactions select: [:aTransaction | aTransaction isKindOf: Transfer ].
+
+	^ transactions inject: 0 into: [:net :aTransfer | aTransfer transferenceValue + net	]! !
+
+
+!ReceptiveAccount methodsFor: 'printing' stamp: 'JI 9/26/2017 22:50:07'!
+namingAccountsWith: aDictionary 
 	
-	^transfers inject: 0 into: [:net :aTransfer | aTransfer valueWithAccount: self withACurrentBalanceOf: net	]! !
+	^ OrderedCollection new add: (aDictionary at: self); yourself ! !
