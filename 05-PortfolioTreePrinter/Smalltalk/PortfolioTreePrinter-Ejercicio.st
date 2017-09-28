@@ -458,33 +458,42 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:40:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/28/2017 03:53:09'!
 accountSummaryLinesOf: aReceptiveAccount 
 	
-	^self onTransactionsOf: aReceptiveAccount inject: OrderedCollection new into: [:summaryOfTransactions :aTransaction | summaryOfTransactions add: (aTransaction printSummary). summaryOfTransactions ].
+	| objectMethod |
+	objectMethod _ AccountTransactionsClosure onTransactionsOf: aReceptiveAccount inject: OrderedCollection new into: [:summaryOfTransactions :aTransaction | summaryOfTransactions add: (aTransaction printSummary). summaryOfTransactions ].
 		
+	^objectMethod executeBlock 
 
 	
 ! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:06'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/28/2017 03:54:22'!
 accountTransferNetOf: aReceptiveAccount 
 	
-	^self onTransactionsOf: aReceptiveAccount inject: 0 into: [:net :aTransfer | aTransfer transferenceValue + net	]
+	| objectMethod |
+	objectMethod _ AccountTransactionsClosure onTransactionsOf: aReceptiveAccount inject: 0 into: [:net :aTransfer | aTransfer transferenceValue + net	].
 	
-	! !
+	^objectMethod executeBlock ! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:13'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/28/2017 03:54:36'!
 investmentEarningsOf: aReceptiveAccount 
 	
 	
-	^self onTransactionsOf: aReceptiveAccount inject: 0 into: [:total :aTransaction | aTransaction investmentEarnings +total].
-		! !
+	| objectMethod |
+	objectMethod _ AccountTransactionsClosure onTransactionsOf: aReceptiveAccount inject: 0 into: [:total :aTransaction | aTransaction investmentEarnings +total].
+		
+		
+	^	objectMethod executeBlock ! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/27/2017 19:47:20'!
+!PortfolioTest methodsFor: 'test support' stamp: 'JI 9/28/2017 03:54:48'!
 investmentNetOf: aReceptiveAccount 
 	
-	^ self onTransactionsOf: aReceptiveAccount inject: 0 into:[:total :aTransaction | aTransaction value] .! !
+	| objectMethod |
+	objectMethod _ AccountTransactionsClosure onTransactionsOf: aReceptiveAccount inject: 0 into:[:total :aTransaction | aTransaction value] .
+	
+	^ objectMethod executeBlock ! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'JI 9/26/2017 23:18:53'!
 portofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
@@ -496,12 +505,6 @@ portofolioTreeOf: aPortfolio namingAccountWith: aDictionary
 reversePortofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
 	
 	^ (self portofolioTreeOf: aPortfolio namingAccountWith: aDictionary) 	reverse ! !
-
-
-!PortfolioTest methodsFor: 'evaluating' stamp: 'JI 9/27/2017 19:44:58'!
-onTransactionsOf: aReceptiveAccount inject: something into: aBinaryBlock
-	
-	^ aReceptiveAccount transactions inject: something into: aBinaryBlock! !
 
 
 !classDefinition: #AccountTransaction category: #'PortfolioTreePrinter-Ejercicio'!
@@ -810,6 +813,38 @@ register: aValue on: account
 	account register: withdraw.
 		
 	^ withdraw! !
+
+
+!classDefinition: #AccountTransactionsClosure category: #'PortfolioTreePrinter-Ejercicio'!
+Object subclass: #AccountTransactionsClosure
+	instanceVariableNames: 'accountTransactions initialValue binaryBlockClosure'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!AccountTransactionsClosure methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 03:52:23'!
+executeBlock
+	
+	^ accountTransactions inject: initialValue into: binaryBlockClosure ! !
+
+!AccountTransactionsClosure methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 03:51:34'!
+onTransactionsOf: aReceptiveAccount inject: something into: aBinaryBlock
+	
+	accountTransactions _ aReceptiveAccount transactions.
+	initialValue _ something.
+	binaryBlockClosure _ aBinaryBlock! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountTransactionsClosure class' category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransactionsClosure class
+	instanceVariableNames: ''!
+
+!AccountTransactionsClosure class methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 03:50:30'!
+onTransactionsOf: aReceptiveAccount inject: something into: aBinaryBlock
+	
+	^ self new onTransactionsOf: aReceptiveAccount inject: something into: aBinaryBlock
+	! !
 
 
 !classDefinition: #SummarizingAccount category: #'PortfolioTreePrinter-Ejercicio'!
