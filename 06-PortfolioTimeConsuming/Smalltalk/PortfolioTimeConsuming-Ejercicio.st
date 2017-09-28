@@ -560,12 +560,12 @@ should: aBlock notTakeMoreThanMilliseconds: aTimeInMillis
 
 !classDefinition: #AccountSummaryOfInvestment category: #'PortfolioTimeConsuming-Ejercicio'!
 Object subclass: #AccountSummaryOfInvestment
-	instanceVariableNames: 'account myClassToUse'
+	instanceVariableNames: 'account myClassToUse accountSummaryType'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTimeConsuming-Ejercicio'!
 
-!AccountSummaryOfInvestment methodsFor: 'summary in lines' stamp: 'JI 9/28/2017 20:44:31'!
+!AccountSummaryOfInvestment methodsFor: 'summary in lines' stamp: 'JI 9/28/2017 20:52:46'!
 lines 
 
 	| lines investmentEarnings investPrint semaphore |
@@ -574,7 +574,7 @@ lines
 	investmentEarnings _ myClassToUse for: account .
 	[ investPrint _ investmentEarnings value printString. semaphore signal.] fork.
 	
-	[lines := (AccountSummary for: account) lines. semaphore signal] fork.
+	[lines := ( accountSummaryType for: account) lines. semaphore signal] fork.
 
 	semaphore wait.
 	semaphore wait.
@@ -611,11 +611,12 @@ AccountSummaryOfInvestment subclass: #AccountSummaryWithAllInvestmentInformation
 	poolDictionaries: ''
 	category: 'PortfolioTimeConsuming-Ejercicio'!
 
-!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:43:37'!
+!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:58:11'!
 initializeFor: aReceptiveAccount
 	
 	super initializeFor: aReceptiveAccount .
-	myClassToUse  _ InvestmentNetVisitor.! !
+	myClassToUse  _ InvestmentNetVisitor.
+	accountSummaryType  _ AccountSummaryWithInvestmentEarnings .! !
 
 !AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:31:13'!
 printInfoThatIGive
@@ -630,11 +631,12 @@ AccountSummaryOfInvestment subclass: #AccountSummaryWithInvestmentEarnings
 	poolDictionaries: ''
 	category: 'PortfolioTimeConsuming-Ejercicio'!
 
-!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:43:32'!
+!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:55:43'!
 initializeFor: aReceptiveAccount
 	
 	super initializeFor: aReceptiveAccount .
-	myClassToUse  _ InvestmentEarningVisitor   .! !
+	myClassToUse  _ InvestmentEarningVisitor   .
+	accountSummaryType _ AccountSummary ! !
 
 !AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'JI 9/28/2017 20:28:33'!
 printInfoThatIGive
