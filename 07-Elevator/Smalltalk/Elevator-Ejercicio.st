@@ -481,11 +481,16 @@ cabinDoorClosed
 	elevatorDoor close.
 	elevatorCabin startMoving.! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:59:34'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:36:16'!
 cabinDoorOpened
-	isIdle _ true.
-	
 	elevatorDoor open.
+	
+	(floorQueue isEmpty ) 
+		ifTrue: [
+			isIdle _ true.
+			]
+		ifFalse: [
+			]
 ! !
 
 !ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:57:27'!
@@ -499,14 +504,14 @@ cabinOnFloor: aFloorNumber
 	elevatorCabin stop.
 	elevatorDoor startOpening.! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:20:07'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:41:46'!
 goUpPushedFromFloor: aFloorNumber
 	
-	(floorQueue isEmpty) 
+	(floorQueue isEmpty and:[ isIdle ] ) 
 		ifTrue: [
 			elevatorIsIdle _ false.
 			isIdle _ false.
-			elevatorDoor startClosing.] 
+			elevatorDoor startClosing. ] 
 		ifFalse: [
 			floorQueue add: aFloorNumber.].
 	
@@ -545,6 +550,10 @@ isCabinMoving
 !ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:46:48'!
 isCabinStopped
 	^ elevatorCabin isStopped ! !
+
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:42:05'!
+isCabinWaitingForPeople
+	^true! !
 
 !ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:35:19'!
 isIdle
