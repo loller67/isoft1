@@ -13,6 +13,175 @@ TestCase subclass: #ElevatorTest
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
 
+!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/10/2011 17:33'!
+test01ElevatorStartsIdleWithDoorOpenOnFloorZero
+
+	| elevatorController |
+		
+	elevatorController := ElevatorController new.
+		
+	self assert: elevatorController isIdle.
+	self assert: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinDoorOpened.
+	self assert: elevatorController cabinFloorNumber = 0
+! !
+
+!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 17:53'!
+test02CabinDoorStartsClosingWhenElevatorGetsCalled
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor: 1.
+	
+	self deny: elevatorController isIdle.
+	self assert: elevatorController isWorking.
+	
+	self assert: elevatorController isCabinStopped.
+	self deny: elevatorController isCabinMoving.
+	
+	self deny: elevatorController isCabinDoorOpened.
+	self deny: elevatorController isCabinDoorOpening.
+	self assert: elevatorController isCabinDoorClosing.
+	self deny: elevatorController isCabinDoorClosed.! !
+
+!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 17:57'!
+test03CabinStartsMovingWhenDoorGetsClosed
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor:1.
+	elevatorController cabinDoorClosed.
+	
+	self deny: elevatorController isIdle.
+	self assert: elevatorController isWorking.
+
+	self deny: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinMoving.
+	
+	self deny: elevatorController isCabinDoorOpened.
+	self deny: elevatorController isCabinDoorOpening.
+	self deny: elevatorController isCabinDoorClosing.
+	self assert: elevatorController isCabinDoorClosed.! !
+
+!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 18:00'!
+test04CabinStopsAndStartsOpeningDoorWhenGetsToDestination
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor: 1.
+	elevatorController cabinDoorClosed.
+	elevatorController cabinOnFloor: 1.
+
+	self deny: elevatorController isIdle.
+	self assert: elevatorController isWorking.
+	
+	self assert: elevatorController isCabinStopped.
+	self deny: elevatorController isCabinMoving.
+			
+	self deny: elevatorController isCabinDoorOpened.
+	self assert: elevatorController isCabinDoorOpening.
+	self deny: elevatorController isCabinDoorClosing.
+	self deny: elevatorController isCabinDoorClosed.
+
+	self assert: elevatorController cabinFloorNumber = 1
+! !
+
+!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 18:00'!
+test05ElevatorGetsIdleWhenDoorGetOpened
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+	
+	elevatorController goUpPushedFromFloor: 1.
+	elevatorController cabinDoorClosed.
+	elevatorController cabinOnFloor: 1.
+	elevatorController cabinDoorOpened.
+		
+	self assert: elevatorController isIdle.
+	self deny: elevatorController isWorking.
+		
+	self assert: elevatorController isCabinStopped.
+	self deny: elevatorController isCabinMoving.
+
+	self assert: elevatorController isCabinDoorOpened.
+	self deny: elevatorController isCabinDoorOpening.
+	self deny: elevatorController isCabinDoorClosing.
+	self deny: elevatorController isCabinDoorClosed.
+		
+	self assert: elevatorController cabinFloorNumber = 1! !
+
+
+!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:35'!
+test06DoorKeepsOpenedWhenOpeningIsRequested
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+	
+	self assert: elevatorController isCabinDoorOpened.
+	
+	elevatorController openCabinDoor.
+
+	self assert: elevatorController isCabinDoorOpened.! !
+
+!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 6/16/2014 13:24'!
+test07DoorMustBeOpenedWhenCabinIsStoppedAndClosingDoors
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor:1.
+		
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinDoorClosing.
+		
+	elevatorController openCabinDoor.
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinDoorOpening.
+! !
+
+!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:36'!
+test08CanNotOpenDoorWhenCabinIsMoving
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor:1.
+	elevatorController cabinDoorClosed.
+	
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinMoving.
+	self assert: elevatorController isCabinDoorClosed.
+
+	elevatorController openCabinDoor.
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinMoving.
+	self assert: elevatorController isCabinDoorClosed.! !
+
+!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:51'!
+test09DoorKeepsOpeneingWhenItIsOpeneing
+
+	| elevatorController |
+	elevatorController := ElevatorController new.
+
+	elevatorController goUpPushedFromFloor:1.
+	elevatorController cabinDoorClosed.
+	elevatorController cabinOnFloor:1.
+
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinDoorOpening.
+
+	elevatorController openCabinDoor.
+	self assert: elevatorController isWorking.
+	self assert: elevatorController isCabinStopped.
+	self assert: elevatorController isCabinDoorOpening.! !
+
+
 !ElevatorTest methodsFor: 'tests 3' stamp: 'HernanWilkinson 7/10/2011 17:38'!
 test09RequestToGoUpAreEnqueueWhenRequestedWhenCabinIsMoving
 
@@ -199,74 +368,6 @@ test20ElevatorHasToEnterEmergencyIfDoorClosesWhenOpening
 		withExceptionDo: [ :elevatorEmergency | self assert: elevatorEmergency messageText = 'Sensor de puerta desincronizado'.]! !
 
 
-!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:35'!
-test06DoorKeepsOpenedWhenOpeningIsRequested
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-	
-	self assert: elevatorController isCabinDoorOpened.
-	
-	elevatorController openCabinDoor.
-
-	self assert: elevatorController isCabinDoorOpened.! !
-
-!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 6/16/2014 13:24'!
-test07DoorMustBeOpenedWhenCabinIsStoppedAndClosingDoors
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor:1.
-		
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinDoorClosing.
-		
-	elevatorController openCabinDoor.
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinDoorOpening.
-! !
-
-!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:36'!
-test08CanNotOpenDoorWhenCabinIsMoving
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor:1.
-	elevatorController cabinDoorClosed.
-	
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinMoving.
-	self assert: elevatorController isCabinDoorClosed.
-
-	elevatorController openCabinDoor.
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinMoving.
-	self assert: elevatorController isCabinDoorClosed.! !
-
-!ElevatorTest methodsFor: 'tests 2' stamp: 'HernanWilkinson 7/10/2011 17:51'!
-test09DoorKeepsOpeneingWhenItIsOpeneing
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor:1.
-	elevatorController cabinDoorClosed.
-	elevatorController cabinOnFloor:1.
-
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinDoorOpening.
-
-	elevatorController openCabinDoor.
-	self assert: elevatorController isWorking.
-	self assert: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinDoorOpening.! !
-
-
 !ElevatorTest methodsFor: 'tests 5' stamp: 'HernanWilkinson 7/10/2011 17:50'!
 test21CabinHasToStopOnTheFloorsOnItsWay
 	| elevatorController |
@@ -331,107 +432,6 @@ test24CabinHasToStopAndWaitForPeopleOnFloorsOnItsWayNoMatterHowTheyWellCalled
 	self assert: elevatorController isCabinStopped.
 	self assert: elevatorController isCabinDoorClosing.! !
 
-
-!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/10/2011 17:33'!
-test01ElevatorStartsIdleWithDoorOpenOnFloorZero
-
-	| elevatorController |
-		
-	elevatorController := ElevatorController new.
-		
-	self assert: elevatorController isIdle.
-	self assert: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinDoorOpened.
-	self assert: elevatorController cabinFloorNumber = 0
-! !
-
-!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 17:53'!
-test02CabinDoorStartsClosingWhenElevatorGetsCalled
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor: 1.
-	
-	self deny: elevatorController isIdle.
-	self assert: elevatorController isWorking.
-	
-	self assert: elevatorController isCabinStopped.
-	self deny: elevatorController isCabinMoving.
-	
-	self deny: elevatorController isCabinDoorOpened.
-	self deny: elevatorController isCabinDoorOpening.
-	self assert: elevatorController isCabinDoorClosing.
-	self deny: elevatorController isCabinDoorClosed.! !
-
-!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 17:57'!
-test03CabinStartsMovingWhenDoorGetsClosed
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor:1.
-	elevatorController cabinDoorClosed.
-	
-	self deny: elevatorController isIdle.
-	self assert: elevatorController isWorking.
-
-	self deny: elevatorController isCabinStopped.
-	self assert: elevatorController isCabinMoving.
-	
-	self deny: elevatorController isCabinDoorOpened.
-	self deny: elevatorController isCabinDoorOpening.
-	self deny: elevatorController isCabinDoorClosing.
-	self assert: elevatorController isCabinDoorClosed.! !
-
-!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 18:00'!
-test04CabinStopsAndStartsOpeningDoorWhenGetsToDestination
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-
-	elevatorController goUpPushedFromFloor: 1.
-	elevatorController cabinDoorClosed.
-	elevatorController cabinOnFloor: 1.
-
-	self deny: elevatorController isIdle.
-	self assert: elevatorController isWorking.
-	
-	self assert: elevatorController isCabinStopped.
-	self deny: elevatorController isCabinMoving.
-			
-	self deny: elevatorController isCabinDoorOpened.
-	self assert: elevatorController isCabinDoorOpening.
-	self deny: elevatorController isCabinDoorClosing.
-	self deny: elevatorController isCabinDoorClosed.
-
-	self assert: elevatorController cabinFloorNumber = 1
-! !
-
-!ElevatorTest methodsFor: 'tests 1' stamp: 'HernanWilkinson 7/15/2011 18:00'!
-test05ElevatorGetsIdleWhenDoorGetOpened
-
-	| elevatorController |
-	elevatorController := ElevatorController new.
-	
-	elevatorController goUpPushedFromFloor: 1.
-	elevatorController cabinDoorClosed.
-	elevatorController cabinOnFloor: 1.
-	elevatorController cabinDoorOpened.
-		
-	self assert: elevatorController isIdle.
-	self deny: elevatorController isWorking.
-		
-	self assert: elevatorController isCabinStopped.
-	self deny: elevatorController isCabinMoving.
-
-	self assert: elevatorController isCabinDoorOpened.
-	self deny: elevatorController isCabinDoorOpening.
-	self deny: elevatorController isCabinDoorClosing.
-	self deny: elevatorController isCabinDoorClosed.
-		
-	self assert: elevatorController cabinFloorNumber = 1! !
-
 
 !classDefinition: #ElevatorCabin category: #'Elevator-Ejercicio'!
 Object subclass: #ElevatorCabin
@@ -471,23 +471,30 @@ stop
 
 !classDefinition: #ElevatorController category: #'Elevator-Ejercicio'!
 Object subclass: #ElevatorController
-	instanceVariableNames: 'elevatorIsIdle elevatorDoor elevatorCabin isIdle currentFloorNumber floorQueue'
+	instanceVariableNames: 'elevatorIsIdle elevatorDoor elevatorCabin isIdle currentFloorNumber floorQueue isWorking'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 19:59:05'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 17:52:50'!
 cabinDoorClosed
-	elevatorDoor close.
-	elevatorCabin startMoving.! !
+	elevatorDoor isClosing 
+		ifTrue: [ 
+			elevatorDoor close.
+			elevatorCabin startMoving.
+			]
+		ifFalse: [
+			ElevatorEmergency signal: 'Sensor de puerta desincronizado'.
+			].! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:36:16'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:37:37'!
 cabinDoorOpened
 	elevatorDoor open.
 	
 	(floorQueue isEmpty ) 
 		ifTrue: [
 			isIdle _ true.
+			isWorking _ false.
 			]
 		ifFalse: [
 			]
@@ -497,20 +504,31 @@ cabinDoorOpened
 cabinFloorNumber
 	^ currentFloorNumber ! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:56:50'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 17:31:18'!
 cabinOnFloor: aFloorNumber
+	(aFloorNumber  - currentFloorNumber  = 1) ifFalse: [ self raiseEmergencyProtocol]   .
+	
 	currentFloorNumber _ aFloorNumber .
 	
 	elevatorCabin stop.
 	elevatorDoor startOpening.! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:41:46'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:43:33'!
+closeCabinDoor
+	(isIdle not and: [self isCabinMoving not] and: [self isCabinDoorOpening not]) 
+		ifTrue: [ 
+			elevatorDoor startClosing.
+			
+			]! !
+
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:36:37'!
 goUpPushedFromFloor: aFloorNumber
 	
 	(floorQueue isEmpty and:[ isIdle ] ) 
 		ifTrue: [
 			elevatorIsIdle _ false.
 			isIdle _ false.
+			isWorking _ true.
 			elevatorDoor startClosing. ] 
 		ifFalse: [
 			floorQueue add: aFloorNumber.].
@@ -519,13 +537,14 @@ goUpPushedFromFloor: aFloorNumber
 	
 	! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:17:04'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:35:59'!
 initialize
 	elevatorDoor _ ElevatorDoor new.
 	elevatorCabin _ ElevatorCabin new.
 	isIdle _ true.
 	currentFloorNumber _ 0.
-	floorQueue _ OrderedCollection new.! !
+	floorQueue _ OrderedCollection new.
+	isWorking _ false.! !
 
 !ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:37:27'!
 isCabinDoorClosed
@@ -559,13 +578,23 @@ isCabinWaitingForPeople
 isIdle
 	^ isIdle! !
 
-!ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 18:07:10'!
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:35:50'!
 isWorking
-	^ self isIdle not! !
+	^ isWorking! !
 
 !ElevatorController methodsFor: 'as yet unclassified' stamp: 'Ji 10/2/2017 20:09:38'!
 openCabinDoor
 	(self isCabinMoving ) ifFalse: [ elevatorDoor startOpening ]! !
+
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 17:32:17'!
+raiseEmergencyProtocol
+
+	ElevatorEmergency signal: 'Sensor de cabina desincronizado'.! !
+
+!ElevatorController methodsFor: 'as yet unclassified' stamp: 'JI 10/10/2017 16:10:13'!
+waitForPeopleTimedOut
+	
+	elevatorDoor startClosing ! !
 
 
 !classDefinition: #ElevatorDoor category: #'Elevator-Ejercicio'!
